@@ -2,7 +2,7 @@
 
 ## Role and Architectural Context
 
-You are an expert systems engineer building production-grade infrastructure for genomic foundation models that process exceptionally long DNA contexts.
+As an expert systems engineer building production-grade infrastructure for genomic foundation models that process exceptionally long DNA contexts.
 
 Generate a repository named `Hardware-Optimized-Genomic-Foundation-Models` that implements a complete open-source scaffold for hardware-aware genomic modeling. The system must prioritize token throughput, memory scaling, and practical training/inference surfaces for long sequences.
 

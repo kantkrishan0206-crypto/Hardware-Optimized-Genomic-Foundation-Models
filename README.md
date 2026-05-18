@@ -9,8 +9,9 @@ kernelized attention, reproducible biological tasks, async serving, and deployme
 - Performer-style genomic transformer with embeddings, positional encoding, transformer blocks,
   language-model loss, sequence classification head, and `loss.backward()` support.
 - Linear attention and closed-form memory estimator for comparing `O(N^2)` and `O(N)` scaling.
+- Optional FlashAttention and Triton integration modules for GPU experiments.
 - Promoter classification task with deterministic dataset generation and AUROC/F1 metrics.
-- Training loop with checkpointing for promoter classifiers.
+- Training loop with checkpointing and JSONL/TensorBoard/optional W&B/MLflow tracking.
 - FastAPI serving layer with `/predict`, `/score_variant`, `/embed_sequence`,
   FASTA/VCF context parsing, and async inference queue.
 - Static web research console in `web/`.
@@ -20,7 +21,39 @@ kernelized attention, reproducible biological tasks, async serving, and deployme
 
 | Rank | Project Direction | Strategic Alignment | Stanford Match | Objective |
 | --- | --- | --- | --- | --- |
-| 1 | Hardware-Optimized Genomic Foundation Models | Low-level systems, PEFT, hardware-software synthesis | Arc Institute / Brian Hie / Christopher Re | Push genomic context modeling toward multi-megabase windows without quadratic attention memory. |
+| 1 | Hardware-Optimized Genomic Foundation Models | Low-level systems, custom PEFT, hardware-software synthesis | Arc Institute / Brian Hie / Christopher Re | Maximize token throughput and eliminate quadratic `O(N^2)` memory scaling during multi-megabase sequence processing. |
+
+## Why This Exists
+
+Genomic token sequences are exceptionally long. A 1-megabase context window processed with standard
+Transformer attention creates crushing quadratic memory growth, which quickly exhausts GPU memory
+on real clusters. This repository provides a concrete starting point for:
+
+- Streaming genomic FASTA/variant parsing APIs.
+- PyTorch linear attention kernels that scale with sequence length.
+- Optional Triton/CUDA and FlashAttention acceleration layers.
+- Hugging Face `peft` adapters for genomic foundation models.
+- DeepSpeed ZeRO-3 training configuration for memory-constrained multi-GPU execution.
+- Throughput benchmarking and CI-ready tests.
+
+## Real-World Impact
+
+The target application surface is high-context genetic risk prediction and variant interpretation,
+including examples such as BRCA1 locus context modeling or APOE-associated Alzheimer's risk
+analysis. The engineering goal is to move multi-billion parameter genomic workloads toward
+accessible compute nodes for localized personalized medicine.
+
+## Repository Layout
+
+```text
+configs/      model, DeepSpeed, and tokenizer settings
+docs/         architecture, math, deployment, validation, and report drafts
+k8s/          Kubernetes deployment and GPU scheduling patch
+scripts/      dataset preparation and attention benchmarking
+src/hogfm/    tokenizer, model, kernels, tasks, API, training, observability
+tests/        parser, tokenizer, model, task, and kernel tests
+web/          static research console
+```
 
 ## Quick Start
 
