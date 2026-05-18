@@ -4,9 +4,9 @@ Open-source research engineering scaffold for multi-megabase genomic sequence mo
 
 ## Project Direction
 
-| Rank | Project Direction | Strategic Alignment | Stanford Match | Key Architectural Objective |
-| --- | --- | --- | --- | --- |
-| 1 | Hardware-Optimized Genomic Foundation Models | Low-level systems, custom PEFT, hardware-software synthesis | Arc Institute / Brian Hie / Christopher Re | Maximize token throughput and eliminate quadratic `O(N^2)` memory scaling during multi-megabase sequence processing. |
+ Project Direction | Strategic Alignment | Stanford Match | Key Architectural Objective |
+ --- | --- | --- | --- |
+ Hardware-Optimized Genomic Foundation Models | Low-level systems, custom PEFT, hardware-software synthesis | Arc Institute / Brian Hie / Christopher Re | Maximize token throughput and eliminate quadratic `O(N^2)` memory scaling during multi-megabase sequence processing. |
 
 ## Why This Exists
 
