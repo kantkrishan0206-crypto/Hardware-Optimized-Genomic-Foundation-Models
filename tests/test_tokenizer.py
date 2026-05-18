@@ -1,4 +1,4 @@
-from hogfm.tokenization import GenomicTokenizer, train_bpe_tokenizer
+from hogfm.tokenization import GenomicTokenizer, benchmark_tokenizer, train_bpe_tokenizer
 
 
 def test_kmer_tokenizer_round_trip() -> None:
@@ -20,3 +20,13 @@ def test_bpe_training_adds_merges() -> None:
     tokenizer = train_bpe_tokenizer(["ATATAT", "ATATGC", "ATATAT"], vocab_size=16)
     assert tokenizer.strategy == "bpe"
     assert tokenizer.merges
+
+
+def test_masking_and_benchmark() -> None:
+    tokenizer = GenomicTokenizer(strategy="nucleotide")
+    token_ids = tokenizer.encode("ACGT")
+    masked, labels = tokenizer.mask_tokens(token_ids, mask_probability=1.0)
+    assert tokenizer.mask_token_id in masked
+    assert any(label != -100 for label in labels)
+    result = benchmark_tokenizer(tokenizer, ["ACGT"], max_length=8)
+    assert result["tokens"] > 0

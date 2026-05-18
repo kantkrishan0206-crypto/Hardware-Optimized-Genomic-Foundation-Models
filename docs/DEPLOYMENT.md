@@ -16,6 +16,8 @@ http://localhost:8000
 
 ```bash
 kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/hpa.yaml
+kubectl apply -f k8s/network-policy.yaml
 ```
 
 For GPU nodes:

@@ -20,6 +20,14 @@ Metrics emitted:
 - F1
 - AUROC
 
+## Additional Implemented Task Utilities
+
+- enhancer classification motif labels
+- splice-site prediction labels
+- BRCA1-style variant prior scoring
+- ClinVar significance normalization
+- confusion matrices
+
 ## External Dataset Targets
 
 The next validation tier should replace or augment the synthetic task with:

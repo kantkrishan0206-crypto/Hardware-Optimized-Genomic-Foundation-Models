@@ -1,21 +1,33 @@
 # Hardware-Optimized Genomic Foundation Models
 
+[![ci](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/ci.yml/badge.svg)](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/ci.yml)
+[![benchmark](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/benchmark.yml/badge.svg)](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/benchmark.yml)
+[![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 Research-engineering implementation for long-context genomic sequence modeling with
 kernelized attention, reproducible biological tasks, async serving, and deployment scaffolding.
+
+This repository must evolve from a conceptual research scaffold into a fully validated,
+benchmarked, biologically evaluated, hardware-optimized genomic foundation model platform
+comparable in engineering rigor to HyenaDNA, Evo, DNABERT-2, and other frontier genomic
+foundation model repositories.
 
 ## What Is Implemented
 
 - Genomic tokenizer with nucleotide, k-mer, and simple BPE modes.
+- Hugging Face-compatible tokenizer serialization artifacts.
 - Performer-style genomic transformer with embeddings, positional encoding, transformer blocks,
   language-model loss, sequence classification head, and `loss.backward()` support.
-- Linear attention and closed-form memory estimator for comparing `O(N^2)` and `O(N)` scaling.
+- Linear, Performer/FAVOR+, Hyena-style, Mamba-style, and chunked causal attention paths.
 - Optional FlashAttention and Triton integration modules for GPU experiments.
-- Promoter classification task with deterministic dataset generation and AUROC/F1 metrics.
+- Promoter, enhancer, splice, BRCA1, and ClinVar-oriented task utilities.
+- FASTA, FASTQ, VCF, BED, and GTF streaming dataset ingestion.
 - Training loop with checkpointing and JSONL/TensorBoard/optional W&B/MLflow tracking.
 - FastAPI serving layer with `/predict`, `/score_variant`, `/embed_sequence`,
-  FASTA/VCF context parsing, and async inference queue.
+  `/generate`, `/benchmark`, FASTA/VCF context parsing, auth, streaming, and async queueing.
 - Static web research console in `web/`.
-- Docker, Compose, Kubernetes, GPU scheduling patch, CI, structured JSON logging, and docs.
+- Docker, Compose, Kubernetes, Helm, cloud templates, GPU scheduling patch, CI, and docs.
+- Adaptive genomic token compression as a concrete novel research contribution.
 
 ## Research Direction
 
@@ -48,6 +60,7 @@ accessible compute nodes for localized personalized medicine.
 ```text
 configs/      model, DeepSpeed, and tokenizer settings
 docs/         architecture, math, deployment, validation, and report drafts
+helm/         Helm chart with autoscaling and GPU scheduling knobs
 k8s/          Kubernetes deployment and GPU scheduling patch
 scripts/      dataset preparation and attention benchmarking
 src/hogfm/    tokenizer, model, kernels, tasks, API, training, observability
@@ -98,6 +111,8 @@ GET  /health
 POST /predict
 POST /score_variant
 POST /embed_sequence
+POST /generate
+POST /benchmark
 POST /api/parse/fasta
 POST /api/variant/context
 POST /api/variant/context-from-vcf
@@ -129,6 +144,12 @@ For GPU clusters, apply the scheduling patch after labeling the node pool:
 
 ```bash
 kubectl patch deployment hogfm-api --patch-file k8s/gpu-nodepool-patch.yaml
+```
+
+Helm:
+
+```bash
+helm install hogfm helm/hogfm --set gpu.enabled=true
 ```
 
 ## Project Honesty

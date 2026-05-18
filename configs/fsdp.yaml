@@ -1,0 +1,12 @@
+distributed:
+  backend: nccl
+  mixed_precision: bf16
+  gradient_checkpointing: true
+  activation_recompute: true
+  checkpoint_dir: checkpoints/distributed
+
+launch:
+  nnodes: 1
+  nproc_per_node: 8
+  rdzv_backend: c10d
+  max_restarts: 3

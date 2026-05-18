@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from collections import Counter
 from dataclasses import dataclass
 from itertools import product
@@ -18,6 +19,10 @@ DEFAULT_SPECIAL_TOKENS: tuple[str, ...] = (
     "<var>",
     "<ref>",
     "<alt>",
+    "<bos>",
+    "<eos>",
+    "<chr_start>",
+    "<chr_end>",
 )
 
 TokenizationStrategy = Literal["nucleotide", "kmer", "bpe"]
@@ -55,6 +60,8 @@ class GenomicTokenizer:
         self.mask_token_id = self.vocab["<mask>"]
         self.cls_token_id = self.vocab["<cls>"]
         self.sep_token_id = self.vocab["<sep>"]
+        self.bos_token_id = self.vocab["<bos>"]
+        self.eos_token_id = self.vocab["<eos>"]
 
     @property
     def vocab_size(self) -> int:
@@ -145,6 +152,36 @@ class GenomicTokenizer:
             tokens = [token for token in tokens if token not in self.special_tokens]
         return "".join(tokens)
 
+    def get_vocab(self) -> dict[str, int]:
+        return dict(self.vocab)
+
+    def token_to_id(self, token: str) -> int:
+        return self.vocab.get(token, self.unk_token_id)
+
+    def id_to_token_value(self, token_id: int) -> str:
+        return self.id_to_token.get(token_id, "<unk>")
+
+    def mask_tokens(
+        self,
+        token_ids: list[int],
+        mask_probability: float = 0.15,
+        seed: int = 13,
+    ) -> tuple[list[int], list[int]]:
+        import random
+
+        rng = random.Random(seed)
+        masked: list[int] = []
+        labels: list[int] = []
+        protected = {self.pad_token_id, self.cls_token_id, self.sep_token_id}
+        for token_id in token_ids:
+            if token_id in protected or rng.random() > mask_probability:
+                masked.append(token_id)
+                labels.append(-100)
+            else:
+                masked.append(self.mask_token_id)
+                labels.append(token_id)
+        return masked, labels
+
     def batch_encode(
         self,
         sequences: list[str],
@@ -185,7 +222,43 @@ class GenomicTokenizer:
         }
         target = path / "tokenizer.json"
         target.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        self.save_huggingface_compat(path)
         return target
+
+    def save_huggingface_compat(self, output_dir: str | Path) -> None:
+        path = Path(output_dir)
+        tokenizer_config = {
+            "model_type": "hogfm-genomic-tokenizer",
+            "tokenizer_class": "PreTrainedTokenizerFast",
+            "unk_token": "<unk>",
+            "pad_token": "<pad>",
+            "mask_token": "<mask>",
+            "cls_token": "<cls>",
+            "sep_token": "<sep>",
+            "bos_token": "<bos>",
+            "eos_token": "<eos>",
+            "model_max_length": int(1e6),
+            "created_at": int(time.time()),
+        }
+        special_tokens_map = {
+            "unk_token": "<unk>",
+            "pad_token": "<pad>",
+            "mask_token": "<mask>",
+            "cls_token": "<cls>",
+            "sep_token": "<sep>",
+            "bos_token": "<bos>",
+            "eos_token": "<eos>",
+            "additional_special_tokens": ["<chr>", "<var>", "<ref>", "<alt>", "<chr_start>"],
+        }
+        (path / "vocab.json").write_text(json.dumps(self.vocab, indent=2), encoding="utf-8")
+        (path / "tokenizer_config.json").write_text(
+            json.dumps(tokenizer_config, indent=2),
+            encoding="utf-8",
+        )
+        (path / "special_tokens_map.json").write_text(
+            json.dumps(special_tokens_map, indent=2),
+            encoding="utf-8",
+        )
 
     @classmethod
     def from_pretrained(cls, path: str | Path) -> GenomicTokenizer:
@@ -247,3 +320,25 @@ def train_bpe_tokenizer(
         tokenized = next_tokenized
 
     return GenomicTokenizer(strategy="bpe", vocab=vocab, merges=merges)
+
+
+def benchmark_tokenizer(
+    tokenizer: GenomicTokenizer,
+    sequences: list[str],
+    max_length: int = 4096,
+) -> dict[str, float | int | str]:
+    started = time.perf_counter()
+    encoded = tokenizer.batch_encode(sequences, max_length=max_length)
+    elapsed = time.perf_counter() - started
+    total_bases = sum(len(sequence) for sequence in sequences)
+    total_tokens = sum(sum(mask) for mask in encoded.attention_mask)
+    return {
+        "strategy": tokenizer.strategy,
+        "k": tokenizer.k,
+        "sequences": len(sequences),
+        "bases": total_bases,
+        "tokens": total_tokens,
+        "seconds": elapsed,
+        "bases_per_second": total_bases / max(elapsed, 1e-12),
+        "tokens_per_second": total_tokens / max(elapsed, 1e-12),
+    }

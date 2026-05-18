@@ -1,0 +1,19 @@
+properties:
+  configuration:
+    ingress:
+      external: true
+      targetPort: 8000
+    registries: []
+  template:
+    containers:
+      - name: hogfm-api
+        image: ghcr.io/kantkrishan0206-crypto/hogfm-api:latest
+        resources:
+          cpu: 4
+          memory: 16Gi
+        env:
+          - name: HOGFM_CHECKPOINT
+            value: /models/model.safetensors
+    scale:
+      minReplicas: 1
+      maxReplicas: 4

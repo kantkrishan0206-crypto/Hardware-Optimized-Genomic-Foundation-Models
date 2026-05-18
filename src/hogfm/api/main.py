@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Any
 
 import torch
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
 from hogfm.kernels.linear_attention import estimate_attention_memory
@@ -36,6 +37,21 @@ class SequenceRequest(BaseModel):
     @classmethod
     def validate_sequence(cls, value: str) -> str:
         return GenomicTokenizer.normalize(value)
+
+
+class GenerateRequest(SequenceRequest):
+    max_new_tokens: int = Field(default=64, gt=0, le=1024)
+    stream: bool = False
+
+
+class BatchPredictRequest(BaseModel):
+    sequences: list[str] = Field(min_length=1, max_length=64)
+    max_length: int = Field(default=512, gt=8, le=65536)
+
+    @field_validator("sequences")
+    @classmethod
+    def validate_sequences(cls, values: list[str]) -> list[str]:
+        return [GenomicTokenizer.normalize(value) for value in values]
 
 
 class PredictResponse(BaseModel):
@@ -111,6 +127,19 @@ class MemoryEstimateRequest(BaseModel):
     heads: int = Field(gt=0)
     dim: int = Field(gt=0)
     dtype_bytes: int = Field(default=2, gt=0)
+
+
+class BenchmarkRequest(BaseModel):
+    lengths: list[int] = Field(default_factory=lambda: [1024, 2048, 4096])
+    heads: int = Field(default=4, gt=0)
+    dim: int = Field(default=64, gt=0)
+    dtype_bytes: int = Field(default=2, gt=0)
+
+
+async def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
+    expected = os.getenv("HOGFM_API_KEY")
+    if expected and x_api_key != expected:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key.")
 
 
 @dataclass
@@ -197,6 +226,14 @@ class InferenceService:
                 payload["alternate_sequence"],
                 payload["max_length"],
             )
+        if kind == "batch_predict":
+            return self._batch_predict(payload["sequences"], payload["max_length"])
+        if kind == "generate":
+            return self._generate(
+                payload["sequence"],
+                payload["max_length"],
+                payload["max_new_tokens"],
+            )
         raise ValueError(f"Unknown inference job kind: {kind}")
 
     def _encode(self, sequence: str, max_length: int) -> tuple[torch.Tensor, torch.Tensor]:
@@ -215,6 +252,35 @@ class InferenceService:
             promoter_probability=probability,
             model_status=self.model_status,
         )
+
+    @torch.inference_mode()
+    def _batch_predict(self, sequences: list[str], max_length: int) -> list[PredictResponse]:
+        encoded = self.tokenizer.batch_encode(sequences, max_length=max_length)
+        input_ids = torch.tensor(encoded.input_ids, dtype=torch.long, device=self.device)
+        attention_mask = torch.tensor(encoded.attention_mask, dtype=torch.long, device=self.device)
+        output = self.classifier(input_ids=input_ids, attention_mask=attention_mask)
+        probabilities = torch.softmax(output.logits, dim=-1)[:, 1].detach().cpu().tolist()
+        return [
+            PredictResponse(
+                predicted_label=int(probability >= 0.5),
+                promoter_probability=float(probability),
+                model_status=self.model_status,
+            )
+            for probability in probabilities
+        ]
+
+    @torch.inference_mode()
+    def _generate(self, sequence: str, max_length: int, max_new_tokens: int) -> str:
+        input_ids, _ = self._encode(sequence, max_length)
+        generated = input_ids[:, input_ids[0].ne(self.tokenizer.pad_token_id)]
+        encoder = self.classifier.encoder
+        for _ in range(max_new_tokens):
+            output = encoder(generated[:, -max_length:])
+            next_id = torch.argmax(output.logits[:, -1, :], dim=-1, keepdim=True)
+            generated = torch.cat([generated, next_id], dim=1)
+            if next_id.item() == self.tokenizer.sep_token_id:
+                break
+        return self.tokenizer.decode(generated[0].detach().cpu().tolist())
 
     @torch.inference_mode()
     def _embed(self, sequence: str, max_length: int) -> EmbedSequenceResponse:
@@ -302,18 +368,81 @@ async def health(request: Request) -> dict[str, int | str]:
 
 
 @app.post("/predict", response_model=PredictResponse)
-async def predict(payload: SequenceRequest, request: Request) -> PredictResponse:
+async def predict(
+    payload: SequenceRequest,
+    request: Request,
+    _: None = Depends(require_api_key),
+) -> PredictResponse:
     return await _service(request).submit("predict", payload.model_dump())
 
 
+@app.post("/batch_predict", response_model=list[PredictResponse])
+async def batch_predict(
+    payload: BatchPredictRequest,
+    request: Request,
+    _: None = Depends(require_api_key),
+) -> list[PredictResponse]:
+    return await _service(request).submit("batch_predict", payload.model_dump())
+
+
 @app.post("/embed_sequence", response_model=EmbedSequenceResponse)
-async def embed_sequence(payload: SequenceRequest, request: Request) -> EmbedSequenceResponse:
+async def embed_sequence(
+    payload: SequenceRequest,
+    request: Request,
+    _: None = Depends(require_api_key),
+) -> EmbedSequenceResponse:
     return await _service(request).submit("embed", payload.model_dump())
 
 
 @app.post("/score_variant", response_model=ScoreVariantResponse)
-async def score_variant(payload: ScoreVariantRequest, request: Request) -> ScoreVariantResponse:
+async def score_variant(
+    payload: ScoreVariantRequest,
+    request: Request,
+    _: None = Depends(require_api_key),
+) -> ScoreVariantResponse:
     return await _service(request).submit("score_variant", payload.model_dump())
+
+
+@app.post("/generate")
+async def generate(
+    payload: GenerateRequest,
+    request: Request,
+    _: None = Depends(require_api_key),
+) -> dict[str, str] | StreamingResponse:
+    if not payload.stream:
+        text = await _service(request).submit("generate", payload.model_dump())
+        return {"text": text}
+
+    async def stream_tokens() -> Any:
+        text = await _service(request).submit("generate", payload.model_dump())
+        for character in text:
+            yield f"data: {character}\n\n"
+
+    return StreamingResponse(stream_tokens(), media_type="text/event-stream")
+
+
+@app.post("/benchmark")
+async def benchmark(
+    payload: BenchmarkRequest,
+    _: None = Depends(require_api_key),
+) -> dict[str, list[dict[str, float | int]]]:
+    rows: list[dict[str, float | int]] = []
+    for length in payload.lengths:
+        estimate = estimate_attention_memory(
+            tokens=length,
+            heads=payload.heads,
+            dim=payload.dim,
+            dtype_bytes=payload.dtype_bytes,
+        )
+        rows.append(
+            {
+                "sequence_length": length,
+                "quadratic_attention_bytes": estimate.quadratic_attention_bytes,
+                "linear_attention_bytes": estimate.linear_attention_bytes,
+                "reduction_factor": estimate.reduction_factor,
+            }
+        )
+    return {"results": rows}
 
 
 @app.post("/api/parse/fasta", response_model=list[FastaRecordResponse])

@@ -8,7 +8,15 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-AttentionBackend = Literal["performer", "linear", "scaled_dot_product"]
+from hogfm.kernels.attention_variants import HyenaOperator, MambaStyleStateSpace
+
+AttentionBackend = Literal[
+    "performer",
+    "linear",
+    "scaled_dot_product",
+    "hyena",
+    "mamba",
+]
 
 
 @dataclass(frozen=True)
@@ -138,7 +146,12 @@ class GenomicTransformerBlock(nn.Module):
     def __init__(self, config: GenomicTransformerConfig) -> None:
         super().__init__()
         self.attention_norm = nn.LayerNorm(config.hidden_size)
-        self.attention = PerformerSelfAttention(config)
+        if config.attention_backend == "hyena":
+            self.attention = HyenaOperator(config.hidden_size, config.max_position_embeddings)
+        elif config.attention_backend == "mamba":
+            self.attention = MambaStyleStateSpace(config.hidden_size)
+        else:
+            self.attention = PerformerSelfAttention(config)
         self.ffn_norm = nn.LayerNorm(config.hidden_size)
         self.ffn = nn.Sequential(
             nn.Linear(config.hidden_size, config.intermediate_size),

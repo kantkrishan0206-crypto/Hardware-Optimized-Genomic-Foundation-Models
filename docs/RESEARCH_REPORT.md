@@ -2,39 +2,69 @@
 
 ## Abstract
 
-This project implements a compact research platform for hardware-aware genomic foundation models.
-It targets the memory barrier created by quadratic attention over long genomic contexts and
-provides a runnable tokenizer, kernelized transformer, biological task, serving API, deployment
-configuration, and benchmark tooling.
+We present HOGFM, a research-engineering platform for long-context genomic foundation models. The
+system combines genomic tokenization, kernelized sequence mixers, adaptive genomic compression,
+biological task evaluation, distributed training hooks, and production serving infrastructure.
 
-## Contribution
+## Introduction
 
-The current contribution is an integrated experimental system:
+Genomic foundation models are limited by sequence length, memory scaling, and the difficulty of
+connecting low-level systems work to biological validation. HOGFM targets those constraints with a
+runnable platform that separates correctness paths from optional GPU acceleration paths.
 
-1. Genomic tokenization across nucleotide, k-mer, and BPE strategies.
-2. Performer-style transformer blocks for non-quadratic long-context modeling.
-3. End-to-end training and inference surfaces for promoter classification.
-4. Variant log-likelihood scoring and sequence embedding endpoints.
-5. Benchmark scripts that separate theoretical memory estimates from runtime measurements.
-6. Structured experiment tracking with JSONL, TensorBoard, and optional W&B integration.
+## Methods
 
-## Hypothesis
+### Tokenization
 
-Kernelized attention can make high-context genomic modeling more accessible by reducing attention
-memory from an `N x N` term to a sequence-linear representation while preserving enough long-range
-signal for biological tasks.
+The tokenizer supports nucleotide, k-mer, and BPE modes, plus chromosome and masking tokens. It
+writes Hugging Face-compatible vocabulary and tokenizer configuration files.
 
-## Evaluation Plan
+### Sequence Modeling
 
-| Axis | Measurement |
-| --- | --- |
-| Memory scaling | GiB estimates and measured peak GPU memory |
-| Throughput | tokens/sec across sequence lengths |
-| Biological utility | AUROC/F1 on promoter and variant tasks |
-| Numerical stability | finite outputs, gradient checks, approximation error |
-| Deployment quality | API latency, queue depth, container health checks |
+Implemented sequence mixers include Performer/FAVOR+, ELU+1 linear attention, chunked exact causal
+attention, Hyena-style implicit convolution, and Mamba-style selective state-space mixing.
+
+### Hardware Optimization
+
+The project includes PyTorch reference kernels, Triton feature-map/RMSNorm kernels, CUDA RMSNorm
+and rotary kernels, FlashAttention compatibility wrappers, and benchmark tooling.
+
+### Biological Tasks
+
+Implemented task utilities cover promoter prediction, enhancer classification, splice-site
+prediction, BRCA1-style variant priors, and ClinVar label normalization.
+
+### Novel Contribution
+
+Adaptive genomic token compression compresses low-information spans before attention while
+preserving motif-rich regions at base resolution.
+
+## Experiments
+
+The benchmark suite emits CSV tables and optional plots for sequence length scaling, estimated
+VRAM, latency, model-family comparisons, and tokens/sec.
+
+## Biological Evaluation
+
+The current repository provides a reproducible synthetic promoter task and hooks for HG38,
+ClinVar, ENCODE, GTEx, and GenomicBenchmarks ingestion. Publication-grade claims require pinned
+external datasets and frozen trained checkpoints.
+
+## Discussion
+
+The core design makes it possible to test model, tokenizer, kernel, and deployment changes inside a
+single repo. The next research step is training on external biological datasets and replacing
+reference kernels with profiled fused GPU kernels where measured speedups justify the complexity.
 
 ## Limitations
 
-The default model is intentionally small and untrained. The repository should be treated as a
-research implementation substrate until trained checkpoints and external dataset results are added.
+The default API model is randomly initialized. Optional GPU paths require CUDA hardware and
+compatible dependency builds. External biological validation is scaffolded, not claimed.
+
+## Future Work
+
+- Nsight profiling reports for Triton and CUDA kernels.
+- Multi-node ZeRO-3 and FSDP training runs.
+- ClinVar and ENCODE benchmark releases.
+- Adaptive compression ablation studies.
+- Hugging Face model card and checkpoint publication.

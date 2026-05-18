@@ -49,6 +49,29 @@ where `W` is a fixed random projection matrix per attention head. This is an app
 softmax attention and is suitable for benchmarking and research iteration. For production
 biological claims, approximation error must be measured against exact attention on short contexts.
 
+## Hyena-Style Operator
+
+The Hyena reference path models long-range interactions with implicit convolutions:
+
+```text
+y = gate(x) * conv(value(x), h_theta)
+```
+
+where `h_theta` is a learned long filter. This gives long context mixing without pairwise
+attention matrices.
+
+## Mamba-Style State Space
+
+The state-space reference path updates a hidden state recurrently:
+
+```text
+s_t = exp(delta_t A) * s_{t-1} + B_t x_t
+y_t = C_t s_t
+```
+
+This offers linear-time sequence processing and is useful as an alternative to attention for
+million-token contexts.
+
 ## Complexity Validation
 
 Use:

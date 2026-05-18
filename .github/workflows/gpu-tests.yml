@@ -1,0 +1,14 @@
+name: gpu-tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  gpu-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: GPU runner notice
+        run: |
+          echo "Attach a self-hosted CUDA runner for full GPU integration tests."
+          echo "Expected labels: self-hosted, linux, x64, cuda"

@@ -1,0 +1,10 @@
+{
+  "name": "hogfm-api",
+  "imageName": "ghcr.io/kantkrishan0206-crypto/hogfm-api:latest",
+  "containerDiskInGb": 50,
+  "volumeInGb": 100,
+  "ports": "8000/http",
+  "env": [
+    { "key": "HOGFM_CHECKPOINT", "value": "/models/model.safetensors" }
+  ]
+}

@@ -14,7 +14,13 @@ class ModelConfig(BaseModel):
     num_heads: int = Field(default=4, gt=0)
     intermediate_size: int = Field(default=512, gt=0)
     max_position_embeddings: int = Field(default=65536, gt=0)
-    attention_backend: Literal["performer", "linear", "scaled_dot_product"] = "performer"
+    attention_backend: Literal[
+        "performer",
+        "linear",
+        "scaled_dot_product",
+        "hyena",
+        "mamba",
+    ] = "performer"
     performer_features: int = Field(default=64, gt=0)
     dropout: float = Field(default=0.1, ge=0.0, le=0.9)
 

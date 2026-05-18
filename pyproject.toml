@@ -23,8 +23,10 @@ dependencies = [
 [project.optional-dependencies]
 gpu = [
   "accelerate>=0.31",
+  "datasets>=2.20",
   "deepspeed>=0.14",
   "flash-attn>=2.6; platform_system == 'Linux'",
+  "matplotlib>=3.9",
   "peft>=0.11",
   "transformers>=4.42",
   "triton>=2.3"

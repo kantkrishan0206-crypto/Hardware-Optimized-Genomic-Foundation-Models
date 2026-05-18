@@ -1,0 +1,17 @@
+{
+  "family": "hogfm-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["EC2"],
+  "cpu": "4096",
+  "memory": "16384",
+  "containerDefinitions": [
+    {
+      "name": "hogfm-api",
+      "image": "ghcr.io/kantkrishan0206-crypto/hogfm-api:latest",
+      "essential": true,
+      "portMappings": [{ "containerPort": 8000, "protocol": "tcp" }],
+      "resourceRequirements": [{ "type": "GPU", "value": "1" }],
+      "environment": [{ "name": "HOGFM_CHECKPOINT", "value": "/models/model.safetensors" }]
+    }
+  ]
+}

@@ -79,5 +79,21 @@ $("memoryForm").addEventListener("submit", async (event) => {
   }
 });
 
+$("generateForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  show("generateOutput", { status: "running" });
+  try {
+    const data = await postJson("/generate", {
+      sequence: $("generateSequence").value,
+      max_length: 512,
+      max_new_tokens: 48,
+      stream: false,
+    });
+    show("generateOutput", data);
+  } catch (error) {
+    show("generateOutput", { error: error.message });
+  }
+});
+
 checkHealth();
 setInterval(checkHealth, 15000);

@@ -5,6 +5,7 @@ bf16/fp16 attention tensors. Runtime measurements should be generated on the tar
 
 ```bash
 python scripts/benchmark_throughput.py
+python scripts/run_benchmark_suite.py
 ```
 
 | Sequence Length | Quadratic Attention GiB | Linear Attention GiB | Reduction |
@@ -17,3 +18,14 @@ python scripts/benchmark_throughput.py
 
 This is not a substitute for GPU profiling. It is the baseline scaling proof that determines which
 sequence lengths are worth running through Nsight, PyTorch profiler, or cluster benchmarks.
+
+## Model-Family Comparisons
+
+`scripts/run_benchmark_suite.py` emits comparison rows for:
+
+- vanilla transformers
+- Longformer-style windowed attention
+- Performer
+- HyenaDNA-style long convolution
+- Mamba-style state-space mixing
+- DNABERT-2-style bounded-context transformer baselines

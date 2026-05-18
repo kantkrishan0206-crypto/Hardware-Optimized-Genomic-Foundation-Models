@@ -10,6 +10,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
+from hogfm.checkpointing.manager import build_metadata, save_checkpoint
 from hogfm.models import GenomicFoundationModel, GenomicSequenceClassifier, GenomicTransformerConfig
 from hogfm.observability import ExperimentTracker
 from hogfm.tasks.promoter import classification_metrics
@@ -128,9 +129,17 @@ def train_classifier(args: argparse.Namespace) -> dict[str, float]:
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    torch.save(
-        {"model_state_dict": model.state_dict(), "config": config.__dict__},
-        output_dir / "promoter_classifier.pt",
+    save_checkpoint(
+        model,
+        output_dir,
+        metadata=build_metadata(
+            step=args.epochs,
+            epoch=args.epochs,
+            metrics=metrics,
+            config=config.__dict__,
+        ),
+        optimizer=optimizer,
+        use_safetensors=args.safetensors,
     )
     tokenizer.save_pretrained(output_dir)
     metrics = evaluate(model, valid_loader, device)
@@ -159,6 +168,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gradient-accumulation-steps", type=int, default=1)
     parser.add_argument("--seed", type=int, default=13)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--safetensors", action="store_true")
     return parser.parse_args()
 
 
