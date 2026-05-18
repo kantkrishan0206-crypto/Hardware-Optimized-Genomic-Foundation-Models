@@ -1,9 +1,5 @@
 # Hardware-Optimized Genomic Foundation Models
 
-[![ci](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/ci.yml/badge.svg)](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/ci.yml)
-[![benchmark](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/benchmark.yml/badge.svg)](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/benchmark.yml)
-[![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-
 Research-engineering implementation for long-context genomic sequence modeling with
 kernelized attention, reproducible biological tasks, async serving, and deployment scaffolding.
 
