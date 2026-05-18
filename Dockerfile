@@ -4,11 +4,11 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1
 
 WORKDIR /build
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md constraints.txt ./
 COPY src ./src
 
 RUN python -m pip install --upgrade pip wheel setuptools \
-    && python -m pip wheel --wheel-dir /wheels .
+    && python -m pip wheel --constraint constraints.txt --wheel-dir /wheels .
 
 FROM python:3.11-slim AS runtime
 
@@ -19,7 +19,8 @@ RUN addgroup --system hogfm && adduser --system --ingroup hogfm hogfm
 
 WORKDIR /app
 COPY --from=builder /wheels /wheels
-RUN python -m pip install --no-cache-dir /wheels/*.whl \
+COPY constraints.txt ./
+RUN python -m pip install --no-cache-dir --constraint constraints.txt /wheels/*.whl \
     && rm -rf /wheels
 
 USER hogfm

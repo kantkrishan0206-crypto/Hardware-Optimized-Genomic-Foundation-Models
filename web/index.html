@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HOGFM Research Console</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Hardware-Optimized Genomic Foundation Models</p>
+          <h1>Research Console</h1>
+        </div>
+        <label class="api-control">
+          <span>API</span>
+          <input id="apiBase" value="http://localhost:8000" />
+        </label>
+      </header>
+
+      <section class="grid">
+        <form class="panel" id="predictForm">
+          <div class="panel-heading">
+            <h2>Promoter Prediction</h2>
+            <span id="healthBadge" class="badge">checking</span>
+          </div>
+          <textarea id="predictSequence" spellcheck="false">ACGTACGTACGTTATAAACCGGTTAACCGGTT</textarea>
+          <button type="submit">Run Prediction</button>
+          <pre id="predictOutput" class="output"></pre>
+        </form>
+
+        <form class="panel" id="variantForm">
+          <div class="panel-heading">
+            <h2>Variant Score</h2>
+          </div>
+          <label>
+            <span>Reference sequence</span>
+            <textarea id="referenceSequence" spellcheck="false">ACGTACGTACGTACGT</textarea>
+          </label>
+          <label>
+            <span>Alternate sequence</span>
+            <textarea id="alternateSequence" spellcheck="false">ACGTACGTTTGTACGT</textarea>
+          </label>
+          <button type="submit">Score Variant</button>
+          <pre id="variantOutput" class="output"></pre>
+        </form>
+
+        <form class="panel wide" id="memoryForm">
+          <div class="panel-heading">
+            <h2>Attention Memory Estimate</h2>
+          </div>
+          <div class="controls">
+            <label>
+              <span>Tokens</span>
+              <input id="tokens" type="number" min="1" value="1048576" />
+            </label>
+            <label>
+              <span>Heads</span>
+              <input id="heads" type="number" min="1" value="8" />
+            </label>
+            <label>
+              <span>Head dim</span>
+              <input id="dim" type="number" min="1" value="64" />
+            </label>
+          </div>
+          <button type="submit">Estimate</button>
+          <pre id="memoryOutput" class="output"></pre>
+        </form>
+      </section>
+    </main>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>

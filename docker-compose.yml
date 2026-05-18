@@ -1,0 +1,17 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hogfm-api:latest
+    environment:
+      HOGFM_CHECKPOINT: /models/promoter_classifier.pt
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./checkpoints:/models:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

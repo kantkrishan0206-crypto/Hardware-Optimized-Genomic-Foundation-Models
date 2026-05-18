@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hogfm-api
+  labels:
+    app: hogfm-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hogfm-api
+  template:
+    metadata:
+      labels:
+        app: hogfm-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/kantkrishan0206-crypto/hogfm-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: HOGFM_CHECKPOINT
+              value: /models/promoter_classifier.pt
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 16Gi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hogfm-api
+spec:
+  selector:
+    app: hogfm-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hogfm-api
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "32m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+spec:
+  rules:
+    - host: hogfm.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hogfm-api
+                port:
+                  number: 80

@@ -1,8 +1,18 @@
+tokenizer:
+  strategy: "kmer"
+  k: 3
+  max_length: 4096
+
 model:
-  base_model: "LongSafari/hyenadna-small-32k-seqlen-hf"
-  max_sequence_length: 1048576
-  tokenizer_alphabet: "ACGTN"
-  attention_backend: "linear"
+  vocab_size: 134
+  hidden_size: 128
+  num_layers: 4
+  num_heads: 4
+  intermediate_size: 512
+  max_position_embeddings: 1048576
+  attention_backend: "performer"
+  performer_features: 64
+  dropout: 0.1
 
 peft:
   r: 16
@@ -15,9 +25,11 @@ peft:
     - "dense"
 
 training:
-  micro_batch_size: 1
+  seed: 13
+  batch_size: 8
   gradient_accumulation_steps: 16
   learning_rate: 0.0002
-  warmup_steps: 100
-  max_steps: 1000
-  bf16: true
+  epochs: 3
+  gradient_checkpointing: true
+  mixed_precision: false
+  checkpoint_dir: "checkpoints/promoter"
