@@ -1,0 +1,16 @@
+{
+  "unk_token": "<unk>",
+  "pad_token": "<pad>",
+  "mask_token": "<mask>",
+  "cls_token": "<cls>",
+  "sep_token": "<sep>",
+  "bos_token": "<bos>",
+  "eos_token": "<eos>",
+  "additional_special_tokens": [
+    "<chr>",
+    "<var>",
+    "<ref>",
+    "<alt>",
+    "<chr_start>"
+  ]
+}

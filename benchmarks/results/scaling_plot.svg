@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420">
+  <rect width="720" height="420" fill="#ffffff"/>
+  <text x="36" y="36" font-family="Arial" font-size="20" fill="#1f2933">Attention Memory Scaling</text>
+  <line x1="70" y1="350" x2="660" y2="350" stroke="#334155" stroke-width="2"/>
+  <line x1="70" y1="60" x2="70" y2="350" stroke="#334155" stroke-width="2"/>
+  <polyline points="120,320 300,250 480,150 640,70" fill="none" stroke="#b91c1c" stroke-width="4"/>
+  <polyline points="120,336 300,322 480,300 640,260" fill="none" stroke="#0f766e" stroke-width="4"/>
+  <text x="500" y="95" font-family="Arial" font-size="14" fill="#b91c1c">Quadratic attention</text>
+  <text x="500" y="282" font-family="Arial" font-size="14" fill="#0f766e">Linear/Performer family</text>
+  <text x="300" y="392" font-family="Arial" font-size="14" fill="#334155">Sequence length</text>
+  <text x="12" y="210" transform="rotate(-90 12 210)" font-family="Arial" font-size="14" fill="#334155">Estimated VRAM</text>
+</svg>

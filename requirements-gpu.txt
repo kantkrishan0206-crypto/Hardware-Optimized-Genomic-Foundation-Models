@@ -1,0 +1,14 @@
+-r requirements-dev.txt
+accelerate
+datasets
+deepspeed; platform_system == "Linux"
+flash-attn; platform_system == "Linux"
+matplotlib
+mlflow
+peft
+tensorboard
+transformers
+triton; platform_system == "Linux"
+wandb
+xformers; platform_system == "Linux"
+bitsandbytes; platform_system == "Linux"

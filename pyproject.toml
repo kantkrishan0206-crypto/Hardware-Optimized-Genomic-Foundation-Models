@@ -3,9 +3,9 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hardware-optimized-genomic-foundation-models"
-version = "0.1.0"
-description = "Hardware-aware long-sequence genomic foundation model scaffold."
+name = "hogfm"
+version = "0.2.0"
+description = "Hardware-optimized long-context genomic foundation model platform."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -24,12 +24,14 @@ dependencies = [
 gpu = [
   "accelerate>=0.31",
   "datasets>=2.20",
-  "deepspeed>=0.14",
+  "deepspeed>=0.14; platform_system == 'Linux'",
   "flash-attn>=2.6; platform_system == 'Linux'",
   "matplotlib>=3.9",
   "peft>=0.11",
   "transformers>=4.42",
-  "triton>=2.3"
+  "triton>=2.3; platform_system == 'Linux'",
+  "xformers>=0.0.27; platform_system == 'Linux'",
+  "bitsandbytes>=0.43; platform_system == 'Linux'"
 ]
 tracking = [
   "mlflow>=2.14",
@@ -37,11 +39,22 @@ tracking = [
   "wandb>=0.17"
 ]
 dev = [
+  "build>=1.2",
   "httpx>=0.27",
   "pytest>=8.2",
   "pytest-cov>=5.0",
-  "ruff>=0.5"
+  "ruff>=0.5",
+  "twine>=5.1",
+  "wheel>=0.43"
 ]
+
+[project.scripts]
+hogfm-train = "hogfm.training.train:main"
+hogfm-api = "hogfm.api.main:main"
+
+[project.urls]
+Homepage = "https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models"
+Repository = "https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -51,5 +64,10 @@ line-length = 100
 target-version = "py311"
 
 [tool.pytest.ini_options]
-addopts = "-q"
+addopts = "-q -m 'not gpu'"
 testpaths = ["tests"]
+markers = [
+  "gpu: requires CUDA GPU and optional accelerator packages",
+  "slow: long-running integration or benchmark test",
+  "distributed: requires torch.distributed launch context"
+]

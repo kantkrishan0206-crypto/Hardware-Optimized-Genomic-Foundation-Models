@@ -27,7 +27,20 @@ def save_checkpoint(
 ) -> Path:
     path = Path(output_dir)
     path.mkdir(parents=True, exist_ok=True)
-    state_dict = {key: value.detach().cpu() for key, value in model.state_dict().items()}
+    state_dict: dict[str, torch.Tensor] = {}
+    seen_storage: set[tuple[int, int, tuple[int, ...], tuple[int, ...]]] = set()
+    for key, value in model.state_dict().items():
+        tensor = value.detach().cpu()
+        storage_key = (
+            tensor.untyped_storage().data_ptr(),
+            tensor.storage_offset(),
+            tuple(tensor.shape),
+            tuple(tensor.stride()),
+        )
+        if storage_key in seen_storage:
+            tensor = tensor.clone()
+        seen_storage.add(storage_key)
+        state_dict[key] = tensor
     if use_safetensors:
         try:
             from safetensors.torch import save_file

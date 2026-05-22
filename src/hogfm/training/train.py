@@ -81,7 +81,10 @@ def train_classifier(args: argparse.Namespace) -> dict[str, float]:
     tokenizer = GenomicTokenizer(strategy=args.tokenizer, k=args.k)
     train_dataset = JsonlSequenceDataset(args.train)
     valid_dataset = JsonlSequenceDataset(args.valid)
-    collate = lambda rows: collate_batch(rows, tokenizer, args.max_length)
+
+    def collate(rows: list[dict[str, Any]]) -> dict[str, torch.Tensor]:
+        return collate_batch(rows, tokenizer, args.max_length)
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=args.batch_size,

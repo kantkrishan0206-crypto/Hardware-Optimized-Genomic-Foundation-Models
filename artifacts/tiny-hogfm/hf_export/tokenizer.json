@@ -1,0 +1,40 @@
+{
+  "strategy": "nucleotide",
+  "k": 3,
+  "vocab": {
+    "<pad>": 0,
+    "<unk>": 1,
+    "<mask>": 2,
+    "<cls>": 3,
+    "<sep>": 4,
+    "<chr>": 5,
+    "<var>": 6,
+    "<ref>": 7,
+    "<alt>": 8,
+    "<bos>": 9,
+    "<eos>": 10,
+    "<chr_start>": 11,
+    "<chr_end>": 12,
+    "A": 13,
+    "C": 14,
+    "G": 15,
+    "T": 16,
+    "N": 17
+  },
+  "merges": [],
+  "special_tokens": [
+    "<pad>",
+    "<unk>",
+    "<mask>",
+    "<cls>",
+    "<sep>",
+    "<chr>",
+    "<var>",
+    "<ref>",
+    "<alt>",
+    "<bos>",
+    "<eos>",
+    "<chr_start>",
+    "<chr_end>"
+  ]
+}

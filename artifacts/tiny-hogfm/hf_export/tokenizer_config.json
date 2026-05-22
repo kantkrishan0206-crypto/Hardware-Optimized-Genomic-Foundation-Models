@@ -1,0 +1,13 @@
+{
+  "model_type": "hogfm-genomic-tokenizer",
+  "tokenizer_class": "PreTrainedTokenizerFast",
+  "unk_token": "<unk>",
+  "pad_token": "<pad>",
+  "mask_token": "<mask>",
+  "cls_token": "<cls>",
+  "sep_token": "<sep>",
+  "bos_token": "<bos>",
+  "eos_token": "<eos>",
+  "model_max_length": 1000000,
+  "created_at": 1779448835
+}

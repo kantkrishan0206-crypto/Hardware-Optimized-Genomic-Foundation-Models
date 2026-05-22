@@ -1,0 +1,21 @@
+{
+  "python": "3.12.13",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "modules": {
+    "torch": true,
+    "pytest": true,
+    "triton": false,
+    "flash_attn": false,
+    "deepspeed": false,
+    "xformers": false,
+    "bitsandbytes": false
+  },
+  "nvidia_smi": "Fri May 22 16:46:56 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 581.95                 Driver Version: 581.95         CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 3050 ...  WDDM  |   00000000:01:00.0 Off |                  N/A |\n| N/A   69C    P0             16W /   80W |       0MiB /   4096MiB |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|  No running processes found                                                             |\n+-----------------------------------------------------------------------------------------+\n",
+  "torch": {
+    "version": "2.5.1+cu121",
+    "cuda_available": true,
+    "cuda_version": "12.1",
+    "device_count": 1,
+    "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU"
+  }
+}

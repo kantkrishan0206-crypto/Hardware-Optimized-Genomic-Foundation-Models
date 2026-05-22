@@ -17,7 +17,7 @@ def test_batch_padding() -> None:
 
 
 def test_bpe_training_adds_merges() -> None:
-    tokenizer = train_bpe_tokenizer(["ATATAT", "ATATGC", "ATATAT"], vocab_size=16)
+    tokenizer = train_bpe_tokenizer(["ATATAT", "ATATGC", "ATATAT"], vocab_size=24)
     assert tokenizer.strategy == "bpe"
     assert tokenizer.merges
 

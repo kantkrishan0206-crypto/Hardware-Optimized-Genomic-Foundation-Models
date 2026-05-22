@@ -1,0 +1,10 @@
+{
+  "status": "local_generated_artifact",
+  "generated_on": "2026-05-22",
+  "note": "Memory scaling is produced by the repository closed-form model; hardware-specific runtime throughput should be regenerated on the target accelerator.",
+  "sequence_lengths": [128, 256, 512, 1024],
+  "model_families": ["vanilla_transformer", "longformer", "performer", "hyenadna", "mamba", "dnabert2"],
+  "csv": "benchmarks/results/model_family_scaling.csv",
+  "plot": "benchmarks/results/model_family_scaling.png",
+  "validation_policy": "CPU CI validates deterministic scripts; GPU runners generate hardware measurements and profiler traces."
+}

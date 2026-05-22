@@ -4,11 +4,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  gpu-contract:
-    runs-on: ubuntu-latest
+  gpu-validation:
+    runs-on: [self-hosted, linux, x64, cuda]
     steps:
       - uses: actions/checkout@v4
-      - name: GPU runner notice
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install GPU dependencies
         run: |
-          echo "Attach a self-hosted CUDA runner for full GPU integration tests."
-          echo "Expected labels: self-hosted, linux, x64, cuda"
+          python -m pip install --upgrade pip
+          python -m pip install -c constraints.txt -r requirements-gpu.txt
+          python -m pip install -e .
+      - name: GPU tests
+        run: pytest -m gpu
+      - name: GPU profiling smoke
+        run: python scripts/profile_gpu.py --tokens 256 --heads 2 --dim 32 --steps 1

@@ -403,7 +403,7 @@ async def score_variant(
     return await _service(request).submit("score_variant", payload.model_dump())
 
 
-@app.post("/generate")
+@app.post("/generate", response_model=None)
 async def generate(
     payload: GenerateRequest,
     request: Request,
@@ -521,3 +521,9 @@ async def memory_estimate(payload: MemoryEstimateRequest) -> dict[str, float | i
         "linear_attention_bytes": estimate.linear_attention_bytes,
         "reduction_factor": estimate.reduction_factor,
     }
+
+
+def main() -> None:
+    import uvicorn
+
+    uvicorn.run("hogfm.api.main:app", host="0.0.0.0", port=8000)

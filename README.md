@@ -1,5 +1,10 @@
 # Hardware-Optimized Genomic Foundation Models
 
+[![ci](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/ci.yml/badge.svg)](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/ci.yml)
+[![benchmark](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/benchmark.yml/badge.svg)](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/benchmark.yml)
+[![docker](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/docker.yml/badge.svg)](https://github.com/kantkrishan0206-crypto/Hardware-Optimized-Genomic-Foundation-Models/actions/workflows/docker.yml)
+[![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 Research-engineering implementation for long-context genomic sequence modeling with
 kernelized attention, reproducible biological tasks, async serving, and deployment scaffolding.
 
@@ -116,6 +121,30 @@ POST /api/estimate-memory
 ```
 
 ## Benchmarking
+
+Committed benchmark artifacts live in `benchmarks/results/`. The scaling table below is generated
+from the repository's closed-form memory model and is intended as reproducible evidence of the
+quadratic-to-linear memory target; hardware-specific runtime throughput should be regenerated on
+the target GPU.
+
+| Context Length | Vanilla Attention VRAM | Linear/Performer VRAM | Memory Reduction | Artifact |
+| ---: | ---: | ---: | ---: | --- |
+| 1,024 | 0.0156 GiB | 0.0029 GiB | 5.3x | `benchmarks/results/scaling_report.md` |
+| 4,096 | 0.2500 GiB | 0.0117 GiB | 21.3x | `benchmarks/results/scaling_report.md` |
+| 16,384 | 4.0000 GiB | 0.0469 GiB | 85.3x | `benchmarks/results/scaling_report.md` |
+| 65,536 | 64.0000 GiB | 0.1875 GiB | 341.3x | `benchmarks/results/scaling_report.md` |
+| 1,048,576 | 16,384.0000 GiB | 3.0000 GiB | 5,461.3x | `benchmarks/results/scaling_report.md` |
+
+Local validation on Windows with CUDA PyTorch produced:
+
+| Check | Result |
+| --- | --- |
+| CPU tests | `27 passed, 2 deselected` with `pytest -m "not gpu"` |
+| GPU tests | `1 passed, 1 skipped` with `pytest -m gpu` |
+| GPU device | NVIDIA GeForce RTX 3050 Ti Laptop GPU, PyTorch `2.5.1+cu121` |
+| Profiler smoke | `validation/gpu_profiler/summary.json`, peak allocation 8,989,184 bytes |
+| Tiny checkpoint | `artifacts/tiny-hogfm/`, 3 optimizer steps, safetensors and HF export |
+| Docker smoke | Script added; local run blocked because Docker Desktop Linux engine was not running |
 
 Generate theoretical scaling tables:
 

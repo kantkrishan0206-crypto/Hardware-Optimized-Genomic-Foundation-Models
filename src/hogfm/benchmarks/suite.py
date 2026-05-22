@@ -68,6 +68,9 @@ def write_benchmark_csv(rows: list[BenchmarkRow], path: str | Path) -> Path:
 
 def write_scaling_plot(rows: list[BenchmarkRow], path: str | Path) -> Path:
     try:
+        import matplotlib
+
+        matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError as exc:
         raise ImportError("Install matplotlib to generate benchmark plots.") from exc
